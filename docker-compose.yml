@@ -7,16 +7,14 @@ services:
     container_name: laravel_app
     volumes:
       - .:/var/www/html
-    ports:
-      - "8080:9000"
     networks:
       - laravel_net
     depends_on:
       - db
     environment:
-      - DB_CONNECTION=pgsql  # Cambiar a 'mysql' si usas MySQL
+      - DB_CONNECTION=pgsql
       - DB_HOST=db
-      - DB_PORT=5432  # Cambiar a '3306' si usas MySQL
+      - DB_PORT=5432
       - DB_DATABASE=db_p2si1
       - DB_USERNAME=db_p2si1_user
       - DB_PASSWORD=EX4Y7I67V42PYF0w6I57qqbpafxN88aF
@@ -25,7 +23,7 @@ services:
       bash -c "php artisan migrate && php artisan db:seed --class=RoleAndUserSeeder && php artisan db:seed --class=AulasSeeder && php artisan db:seed --class=MateriasSeeder && php artisan db:seed --class=GestionSeeder && php-fpm"
 
   db:
-    image: postgres:13  # Cambiar a 'mysql:5.7' si usas MySQL
+    image: postgres:13
     container_name: laravel_db
     environment:
       POSTGRES_USER: db_p2si1_user
@@ -35,21 +33,24 @@ services:
       - db_data:/var/lib/postgresql/data
     networks:
       - laravel_net
-    ports:
-      - "5432:5432"  # Cambiar a '3306:3306' si usas MySQL
 
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: nginx
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - .:/var/www/html:ro
     depends_on:
       - app
     networks:
       - laravel_net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   db_data:
