@@ -21,7 +21,8 @@ return [
 
     'allowed_origins' => [
         'https://ed2-re.onrender.com',
-        'http://localhost:5173', // Para desarrollo local
+        'http://localhost:5173',
+        'https://ed2-la.onrender.com' // Para desarrollo local
     ],
 
     'allowed_origins_patterns' => [],
