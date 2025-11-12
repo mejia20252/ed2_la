@@ -13,21 +13,30 @@ services:
       - laravel_net
     depends_on:
       - db
+    environment:
+      - DB_CONNECTION=pgsql  # Cambiar a 'mysql' si usas MySQL
+      - DB_HOST=db
+      - DB_PORT=5432  # Cambiar a '3306' si usas MySQL
+      - DB_DATABASE=db_p2si1
+      - DB_USERNAME=db_p2si1_user
+      - DB_PASSWORD=EX4Y7I67V42PYF0w6I57qqbpafxN88aF
+      - JWT_SECRET=tHKG7yAn9fFGrz9s6cENQ88vLTWMBe3CNHqNe9J426EiaYpQ2H7couaD4ELjEdng
+    command: |
+      bash -c "php artisan migrate && php artisan db:seed --class=RoleAndUserSeeder && php artisan db:seed --class=AulasSeeder && php artisan db:seed --class=MateriasSeeder && php artisan db:seed --class=GestionSeeder && php-fpm"
 
   db:
-    image: mysql:5.7
+    image: postgres:13  # Cambiar a 'mysql:5.7' si usas MySQL
     container_name: laravel_db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      POSTGRES_USER: db_p2si1_user
+      POSTGRES_PASSWORD: EX4Y7I67V42PYF0w6I57qqbpafxN88aF
+      POSTGRES_DB: db_p2si1
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     networks:
       - laravel_net
     ports:
-      - "3306:3306"
+      - "5432:5432"  # Cambiar a '3306:3306' si usas MySQL
 
   nginx:
     image: nginx:latest
