@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'https://ed2-re.onrender.com',
+        'http://localhost:5173', // Para desarrollo local
+    ],
 
     'allowed_origins_patterns' => [],
 
