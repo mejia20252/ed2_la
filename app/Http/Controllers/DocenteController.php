@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Str;
 
 use App\Models\Docente;
 use App\Models\Grupo;
+use App\Models\User;
 use App\Models\AsistenciaDocente;
 use App\Models\GrupoHorario;
 use Illuminate\Support\Facades\Auth;
@@ -134,4 +136,37 @@ class DocenteController extends Controller
 
         return response()->json($asistencias);
     }
+   
+   
+public function crearDocente()
+{
+    // Paso 1: Buscar todos los usuarios con el rol 'Docente'
+    $users = User::whereHas('rol', function ($query) {
+        $query->where('nombre', 'Docente');  // Asegúrate que el rol 'Docente' exista en la tabla 'roles'
+    })->get();
+
+    // Paso 2: Crear un docente para cada usuario encontrado
+    foreach ($users as $user) {
+        // Paso 2.1: Verificar si el usuario ya tiene un docente asociado
+        $existingDocente = Docente::where('user_id', $user->id)->first();
+
+        if ($existingDocente) {
+            // Si ya existe un docente para este usuario, continuamos con el siguiente usuario
+            continue;
+        }
+
+        // Paso 2.2: Generar un registro aleatorio
+        $registroAleatorio = 'DOC-' . Str::random(8); // Puedes ajustar el prefijo y la longitud si es necesario
+
+        // Paso 3: Crear el registro en la tabla docentes
+        $docente = Docente::create([
+            'user_id' => $user->id, // Relacionar con el usuario
+            'registro' => $registroAleatorio, // Asignar el registro aleatorio
+            'especialidad' => null, // Puedes asignar una especialidad o dejarlo null
+        ]);
+    }
+
+    return response()->json(['message' => 'Docentes creados con éxito']);
+}
+
 }

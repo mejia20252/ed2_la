@@ -103,8 +103,23 @@ return new class extends Migration
             $table->foreignId('grupo_horario_id')->constrained('grupo_horarios');
             $table->enum('estado', ['presente', 'ausente', 'justificado']);
             $table->date('fecha');
-            
-
+        });
+        Schema::create('comunicados', function (Blueprint $table) {
+            $table->id();
+            $table->string('titulo'); // Título del comunicado
+            $table->text('contenido'); // Contenido del comunicado
+            $table->date('fecha'); // Fecha de emisión
+            $table->string('archivo')->nullable();
+            $table->foreignId('usuario_id')->constrained('users'); // Relación con la tabla 'users'
+        });
+        Schema::create('licencias', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('docente_id')->constrained('docentes');  // Relación con la tabla 'docentes'
+            $table->enum('tipo', ['maternidad', 'enfermedad', 'personal', 'otro'])->default('otro'); // Tipo de licencia
+            $table->date('fecha_inicio');  // Fecha de inicio de la licencia
+            $table->date('fecha_fin');  // Fecha de fin de la licencia
+            $table->enum('estado', ['pendiente', 'aprobada', 'rechazada'])->default('pendiente');  // Estado de la solicitud
+            $table->text('motivo')->nullable();  // Motivo de la licencia (opcional)
         });
     }
 
@@ -124,5 +139,7 @@ return new class extends Migration
         Schema::dropIfExists('materias');
         Schema::dropIfExists('carga_horarias');
         Schema::dropIfExists('asistencias_docentes');
+        Schema::dropIfExists('comunicados');
+        Schema::dropIfExists('licencias');
     }
 };

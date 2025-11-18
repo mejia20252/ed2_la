@@ -74,17 +74,27 @@ class GrupoHorarioController extends Controller
         return response()->json($horario);
     }
 
-    // Actualizar un horario
     public function update(Request $request, $id)
-    {
-        $horario = GrupoHorario::find($id);
-        if (!$horario) {
-            return response()->json(['message' => 'Horario no encontrado'], 404);
-        }
-
-        $horario->update($request->all());
-        return response()->json($horario);
+{
+    $horario = GrupoHorario::find($id);
+    if (!$horario) {
+        return response()->json(['message' => 'Horario no encontrado'], 404);
     }
+
+    // Validar los datos
+    $validatedData = $request->validate([
+        'grupo_id' => 'required|exists:grupos,id',
+        'dia' => 'required|string',
+        'hora_inicio' => 'required|date_format:H:i',
+        'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+    ]);
+
+    // Actualizar el horario
+    $horario->update($validatedData);
+
+    return response()->json(['message' => 'Horario actualizado con éxito.'], 200);
+}
+
 
     // Eliminar un horario
     public function destroy($id)

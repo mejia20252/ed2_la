@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\GrupoHorario;
 use App\Models\AsistenciaDocente;
+use App\Models\Grupo;
 use App\Exports\AsistenciaDocentesExport;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -94,4 +95,24 @@ class AsistenciaDocenteController extends Controller
         // Generar el archivo Excel
         return Excel::download(new AsistenciaDocentesExport($asistencias), 'asistencia_docentes.xlsx');
     }
+    public function getAsistenciasDocente(Request $request)
+    {
+        // Obtener el docente autenticado
+        $docenteId = $request->user()->docente->id;
+
+        // Obtener las clases del docente
+        $grupos = Grupo::where('docente_id', $docenteId)->get();
+
+        // Obtener las asistencias de cada grupo para este docente
+        $asistencias = [];
+
+        foreach ($grupos as $grupo) {
+            $asistencias[] = AsistenciaDocente::where('grupo_id', $grupo->id)->get();
+        }
+
+        // Devolver las asistencias
+        return response()->json($asistencias);
+    }
+
+    
 }

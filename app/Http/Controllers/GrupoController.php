@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Grupo;
+use App\Models\Docente;
 
 use Illuminate\Http\Request;
 
@@ -31,15 +32,20 @@ class GrupoController extends Controller
     public function store(Request $request)
     {
         // Validar los datos de entrada
-        $validatedData = $request->validate([
-            'materia_id' => 'required|exists:materias,id',
-            'gestion_id' => 'required|exists:gestiones,id',
-            'codigo' => 'required|string|unique:grupos,codigo',
-            'capacidad' => 'required|integer',
-            'modalidad' => 'required|string',
-            'docente_id' => 'required|exists:docentes,id',
-            'aula_id' => 'required|exists:aulas,id',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'materia_id' => 'required|exists:materias,id',
+                'gestion_id' => 'required|exists:gestiones,id',
+                'codigo' => 'required|string|unique:grupos,codigo',
+                'capacidad' => 'required|integer',
+                'modalidad' => 'required|string',
+                'docente_id' => 'nullable|exists:docentes,id',
+                'aula_id' => 'required|exists:aulas,id',
+            ],
+            [
+                'codigo.unique' => 'El código del grupo ya ha sido registrado. Por favor, elija otro.',  // Mensaje personalizado en español
+            ]
+        );
 
         // Verificar si ya existe un grupo con el mismo docente y aula en el mismo horario
         $conflictoDocente = Grupo::where('docente_id', $validatedData['docente_id'])
@@ -161,4 +167,26 @@ class GrupoController extends Controller
         // Paso 6: Responder con el grupo actualizado
         return response()->json(['message' => 'Horario asignado correctamente al grupo', 'grupo' => $grupo]);
     }
+    public function asignarDocente(Request $request, $grupoId)
+{
+    // Validar que el grupo existe
+    $grupo = Grupo::find($grupoId);
+    if (!$grupo) {
+        return response()->json(['message' => 'Grupo no encontrado'], 404);
+    }
+
+    // Validar que el docente existe
+    $docenteId = $request->input('docente_id');
+    $docente = Docente::find($docenteId);
+    if (!$docente) {
+        return response()->json(['message' => 'Docente no encontrado'], 404);
+    }
+
+    // Asignar el docente al grupo
+    $grupo->docente_id = $docenteId;
+    $grupo->save();
+
+    return response()->json(['message' => 'Docente asignado al grupo con éxito', 'grupo' => $grupo], 200);
+}
+
 }

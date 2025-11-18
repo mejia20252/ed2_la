@@ -11,8 +11,33 @@ use App\Http\Controllers\GestionController;
 use App\Http\Controllers\CargaHorariaController;
 use App\Http\Controllers\GrupoHorarioController;
 use App\Http\Controllers\AsistenciaDocenteController;
+use App\Http\Controllers\ComunicadoController;
+use App\Http\Controllers\LicenciaController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+use Google\Cloud\Storage\StorageClient;
+use Illuminate\Support\Facades\Storage;
 
+Route::get('/test-gcs', function () {
+    $storage = new StorageClient([
+        'keyFilePath' => env('GOOGLE_CLOUD_KEY_FILE')
+    ]);
+    $bucket = $storage->bucket(env('GOOGLE_CLOUD_STORAGE_BUCKET'));
+
+    $bucket->upload(
+        'Hola desde Laravel en GCS',
+        [
+            'name' => 'prueba.txt'
+        ]
+    );
+
+    return response()->json(['message' => 'Archivo subido correctamente']);
+});
+Route::get('comunicados', [ComunicadoController::class, 'index']); // Listar todos los comunicados
+Route::get('comunicados/{id}', [ComunicadoController::class, 'show']); // Ver un comunicado específico
+Route::post('comunicados', [ComunicadoController::class, 'store']); // Crear un nuevo comunicado
+Route::put('comunicados/{id}', [ComunicadoController::class, 'update']); // Actualizar un comunicado
+Route::delete('comunicados/{id}', [ComunicadoController::class, 'destroy']); // Eliminar un comunicado
 
 Route::post('asistencia-docente/{grupoHorario}', [AsistenciaDocenteController::class, 'marcarAsistencia']);
 Route::get('docentes/asistencias', [DocenteController::class, 'obtenerAsistencias']);
@@ -36,7 +61,8 @@ Route::delete('usuarios/{id}', [UserController::class, 'destroy']);
 
 
 Route::get('docentes/horarios', [DocenteController::class, 'horarios']);
-
+Route::post('/crear-docentes', [DocenteController::class, 'crearDocente']);
+Route::get('docentes', [DocenteController::class, 'index']);
 Route::get('docentes', [DocenteController::class, 'index']);
 Route::get('docentes/{id}', [DocenteController::class, 'show']);
 Route::post('docentes', [DocenteController::class, 'store']);
@@ -44,6 +70,8 @@ Route::put('docentes/{id}', [DocenteController::class, 'update']);
 Route::patch('docentes/{id}', [DocenteController::class, 'update']);
 Route::delete('docentes/{id}', [DocenteController::class, 'destroy']);
 Route::post('/docentes/{docenteId}/crear-horarios', [DocenteController::class, 'crearHorariosParaDocente']);
+
+Route::put('/grupos/{grupoId}/asignar-docente', [GrupoController::class, 'asignarDocente']);
 
 Route::get('grupos', [GrupoController::class, 'index']);
 Route::get('grupos/{id}', [GrupoController::class, 'show']);
@@ -122,5 +150,18 @@ Route::delete('carga_horarias/{id}', [CargaHorariaController::class, 'destroy'])
 // Ruta para generar el PDF de la asistencia de los docentes
 Route::post('asistencia-docentes/pdf', [AsistenciaDocenteController::class, 'generateAsistenciaDocentesPdf']);
 
+Route::get('/asistencias/docente',[AsistenciaDocenteController::class, 'getAsistenciasDocente']);
+
 // Ruta para generar el reporte de asistencia de los docentes en formato Excel
 Route::post('asistencia-docentes/report', [AsistenciaDocenteController::class, 'generateAsistenciaDocentesReport']);
+
+Route::put('/licencias/{id}/estado', [LicenciaController::class, 'updateEstado']);
+Route::get('/licencias/todas', [LicenciaController::class, 'allLicencias']);
+Route::get('licencias', [LicenciaController::class, 'index']);
+
+// Crear una nueva solicitud de licencia
+Route::post('licencias', [LicenciaController::class, 'store']);
+
+// Actualizar el estado de la solicitud de licencia
+Route::put('licencias/{id}', [LicenciaController::class, 'update']);
+Route::delete('licencias/{id}', [LicenciaController::class, 'destroy']);
