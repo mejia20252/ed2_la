@@ -20,21 +20,21 @@ class ComunicadoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-   public function store(Request $request)
+    public function store(Request $request)
     {
         // Validar los datos
         $request->validate([
             'titulo' => 'required|string|max:255',
             'contenido' => 'required|string',
             'fecha' => 'required|date',
-            'archivo' => 'nullable|file', // Validar si el archivo es una carga válida
+            'archivo' => 'nullable|file', // Permitir que el archivo sea opcional
         ]);
 
         // Subir el archivo a GCP si existe
+        $path = null; // Inicializar como null en caso de que no se suba archivo
         if ($request->hasFile('archivo')) {
-            $path = $request->file('archivo')->store('comunicados', 'gcs'); // Subir el archivo al bucket GCS
-        } else {
-            $path = null; // Si no hay archivo, dejamos el valor como null
+            // Si el archivo es subido, guardarlo en GCS
+            $path = $request->file('archivo')->store('comunicados', 'gcs');
         }
 
         // Crear el nuevo comunicado
@@ -42,8 +42,8 @@ class ComunicadoController extends Controller
             'titulo' => $request->titulo,
             'contenido' => $request->contenido,
             'fecha' => $request->fecha,
-            'usuario_id' => Auth::id(),// Guardamos el ID del usuario autenticado
-            'archivo' => $path, // Ruta del archivo en el bucket GCP (si se subió)
+            'usuario_id' => Auth::id(), // Guardamos el ID del usuario autenticado
+            'archivo' => $path, // Ruta del archivo en el bucket GCS (si se subió)
         ]);
 
         // Retornar respuesta en formato JSON
@@ -52,6 +52,7 @@ class ComunicadoController extends Controller
             'data' => $comunicado
         ], 201); // Código 201 para creación exitosa
     }
+
 
     /**
      * Display the specified resource.

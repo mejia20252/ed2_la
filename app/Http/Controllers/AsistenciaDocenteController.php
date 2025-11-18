@@ -113,6 +113,49 @@ class AsistenciaDocenteController extends Controller
         // Devolver las asistencias
         return response()->json($asistencias);
     }
+    
+     public function obtenerAsistenciasPorGrupoYHorario(Request $request)
+    {
+        // Obtener todos los grupos
+        $grupos = Grupo::all();  // Se puede filtrar por algún criterio, si es necesario
 
+        // Array para almacenar las asistencias por grupo y horario
+        $asistenciasPorGrupoYHorario = [];
+
+        // Iterar sobre cada grupo
+        foreach ($grupos as $grupo) {
+            // Obtener los horarios del grupo
+            $horarios = GrupoHorario::where('grupo_id', $grupo->id)->get();
+
+            // Iterar sobre cada horario
+            foreach ($horarios as $horario) {
+                // Obtener las asistencias de los docentes para este grupo y horario
+                $asistencias = AsistenciaDocente::where('grupo_id', $grupo->id)
+                    ->where('grupo_horario_id', $horario->id)
+                    ->get();
+
+                // Almacenar las asistencias en el array
+                $asistenciasPorGrupoYHorario[] = [
+                    'grupo' => $grupo->codigo,
+                    'nombre_grupo' => $grupo->materia->nombre,  // Nombre de la materia
+                    'horario' => [
+                        'dia' => $horario->dia,
+                        'hora_inicio' => $horario->hora_inicio,
+                        'hora_fin' => $horario->hora_fin,
+                    ],
+                    'asistencias' => $asistencias->map(function ($asistencia) {
+                        return [
+                            'docente_id' => $asistencia->docente_id,
+                            'estado' => $asistencia->estado,
+                            'fecha' => $asistencia->fecha,
+                        ];
+                    }),
+                ];
+            }
+        }
+
+        // Devolver los resultados en formato JSON
+        return response()->json($asistenciasPorGrupoYHorario);
+    }
     
 }

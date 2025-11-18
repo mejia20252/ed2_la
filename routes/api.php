@@ -146,7 +146,8 @@ Route::put('carga_horarias/{id}', [CargaHorariaController::class, 'update']);
 Route::patch('carga_horarias/{id}', [CargaHorariaController::class, 'update']);
 Route::delete('carga_horarias/{id}', [CargaHorariaController::class, 'destroy']);
 
-
+// Endpoint para obtener las asistencias de todos los docentes según el grupo y horario
+Route::get('/asistencias-grupo-horario', [AsistenciaDocenteController::class, 'obtenerAsistenciasPorGrupoYHorario']);
 // Ruta para generar el PDF de la asistencia de los docentes
 Route::post('asistencia-docentes/pdf', [AsistenciaDocenteController::class, 'generateAsistenciaDocentesPdf']);
 
